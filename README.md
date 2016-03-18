@@ -1,5 +1,5 @@
 ## planner2taskwarrior
-A bash script to add planner tasks to taskwarrior. Generate plans with planner and automatically add all tasks into taskwarrior.
+A bash script to add planner tasks to taskwarrior. Generate plans with planner and automatically add all tasks into taskwarrior. Tasks will use the start and due dates calculated in planner.
 
 ### Usage
 planner2taskwarrior.sh /path/to/planner/file.xml
@@ -12,7 +12,12 @@ As of 2016-03-18 the script will pull out all the tasks from the planner xml. Fo
   * If task already added - update the wait and due dates
 
 ### Info
-Planner is a (older) project planning sytem that is standalone and easy to use. Plans are saved in xml format.
-Planner [website](https://wiki.gnome.org/action/show/Apps/Planner?action=show&redirect=Planner)
+[Planner](https://wiki.gnome.org/action/show/Apps/Planner?action=show&redirect=Planner) is an (older) project planning sytem that is standalone and easy to use. Plans are saved in xml format.
 
 [Taskwarrior](http://taskwarrior.org) is a command-line task management and prioritiation system.
+
+### To do
+* Read project dependencies to properly assign task order
+* Code cleanup
+* If task is removed in planner, remove in taskwarrior
+* Import priority from planner
