@@ -1,0 +1,3 @@
+[submodule "blasphemy.sh"]
+	path = blasphemy.sh
+	url = https://github.com/RobinRamael/blasphemy.sh.git
