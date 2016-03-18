@@ -42,9 +42,18 @@ egrep "<task |predecessor-id" $1 | while read -r line ; do
 				task $taskID modify due:$end wait:$wait &> /dev/null
 				#exit 0
 			else
-				#echo "Task does not exist yet" # create task
-				task add project:"$projName" due:$end wait:$wait $name &> /dev/null
-				#exit 0
+				task waiting "$name" &> /dev/null
+				if [ $? == 0 ]; then
+					# NOT WORKING PROPERLY
+					#echo "The task is already waiting"
+					taskID=$(task waiting | grep "$name" | awk '{print $1}') > /dev/null
+					echo "Task ID is $taskID"
+					#task $taskID modify due:$end wait:$wait &> /dev/null
+				else
+					#echo "Task does not exist yet" # create task
+					task add project:"$projName" due:$end wait:$wait $name &> /dev/null
+					#exit 0
+				fi
 			fi
 		fi
 	fi
