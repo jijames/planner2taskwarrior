@@ -19,46 +19,60 @@ if [ ! -f "$1" ]; then
 fi
 
 
+# Check if task is complete (by name)
+function checkComplete {
+	#echo "Checking complete: $1"
+	task complete "$1" &> /dev/null
+	return $?
+}
+
+# Check if task is in main list (by name)
+function checkMain {
+	#echo "Checking main $1"
+	task list "$1" &> /dev/null
+	return $?
+}
+
+# Check if task is in waiting list (by name)
+function checkWaiting {
+	#echo "Checking waiting $1"
+	task waiting "$1" &> /dev/null
+	return $?
+}
 
 projName=$(egrep "project name" $1 | awk -F'"' '{print $2}')
 egrep "<task |predecessor-id" $1 | while read -r line ; do
-	if [[ $line != *"predecessor"* ]]; then  # use to detect prior tasks
-		#echo "This is a task"
-		#echo $line | sed -r 's/[^\"]*([\"][^\"]*[\"][,]?)[^\"]*/\1 /g' #| sed 's/\"//g'
+	if [[ $line != *"predecessor"* ]]; then  # use to detect prior tasks *TODO*
 		name=$(echo $line | awk -F'"' '{print $4}')
 		id=$(echo $line | awk -F'"' '{print $2}')
 		wait=$(echo $line | awk -F'"' '{print $10}')
 		end=$(echo $line | awk -F'"' '{print $12}')
-		#echo "The name is $name and the id is $id"
-		#echo "Start time $wait end time $end"
 		# Check if task has been completed. If yes - skip
-		task complete "$name" &> /dev/null
-		if [ $? == 1 ]; then
-			task list | grep "$name" > /dev/null
-			if [ $? == 0 ]; then
-				#echo "Task already exists and is not done" # get id and modify timestamps
-				taskID=$(task list | grep "$name" | awk '{print $1}') > /dev/null
+		checkComplete "$name"
+		if [ $? == 0 ]; then # is complete
+			continue
+		else
+			checkWaiting "$name"
+			tskWait=$?
+			checkMain "$name"
+			tskMain=$?
+			if [ $tskWait == 0 ]; then  # is waiting - update
+				#echo "Waiting"
+				taskID=$(task waiting "$name" | grep -A2 "Age" | tail -n 1 | awk '{print $1}') > /dev/null
 				#echo "Task ID is $taskID"
 				task $taskID modify due:$end wait:$wait &> /dev/null
-				#exit 0
+			elif [ $tskMain == 0 ]; then  # is in main - update
+				#echo "Main"
+				taskID=$(task list "$name" | grep -A2 "Age" | tail -n 1 | awk '{print $1}') > /dev/null
+				#echo "Task ID is $taskID"
+				task $taskID modify due:$end wait:$wait &> /dev/null
 			else
-				task waiting "$name" &> /dev/null
-				if [ $? == 0 ]; then
-					# NOT WORKING PROPERLY
-					#echo "The task is already waiting"
-					taskID=$(task waiting | grep "$name" | awk '{print $1}') > /dev/null
-					echo "Task ID is $taskID"
-					#task $taskID modify due:$end wait:$wait &> /dev/null
-				else
-					#echo "Task does not exist yet" # create task
-					task add project:"$projName" due:$end wait:$wait $name &> /dev/null
-					#exit 0
-				fi
+				# Task does not exist yet. Create task.
+				# creates duplicates if the name has special characters
+				#echo "Create task"
+				task add project:"$projName" due:$end wait:$wait $name &> /dev/null
 			fi
 		fi
 	fi
 done
 
-
-#closed=($(task completed))
-#printUsage

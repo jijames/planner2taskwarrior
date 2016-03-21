@@ -21,3 +21,4 @@ As of 2016-03-18 the script will pull out all the tasks from the planner xml. Fo
 * Code cleanup
 * If task is removed in planner, remove in taskwarrior
 * Import priority from planner
+* Bug: Creates duplicates if name of task has special characters
